@@ -54,9 +54,11 @@ class Parse{
 	 *
 	 * @return void
 	**/
-	private  function Connect(){
+    private  function Connect(){
         $url = "https://passport.yandex.ru/auth?retpath=https%3A%2F%2Fpassport.yandex.ru%2Fpassport%3Fmode%3Dpassport&ncrnd=449489";
         $post = preg_replace(Array("#{login}#is", "#{password}#is"), Array($this -> login, $this -> password), "login={login}&passwd={password}&retpath=https%3A%2F%2Fpassport.yandex.ru%2Fpassport%3Fmode%3Dpassport");
+        $testString = '#>[\s]*'.substr($this -> login, 1).'#is';
+
         try{
             if (!$this -> curl -> get("https://passport.yandex.ru/")){
                 throw new Exception("не удалось подключиться к серверу");
@@ -64,22 +66,28 @@ class Parse{
             if (!$this -> curl -> post($url,$post)){
                 throw new Exception("не удалось отправить post запрос");
             }
+
+            if(!preg_match($testString, $this -> curl -> data)){
+                throw new Exception("неверный логин/пароль");
+            }
+
         } catch (Exception $e){
             echo 'Ошибка: ', $e -> getMessage(), "\n";
         }
 
-	}
+    }
+
 
 
 	/**
-	* Replaces id and dates with params
-	*
-	* Accepts three integers and returns the Array
-	*
-	* @param int $counter_id an id of the counter in ya.metrika
-	* @param int $date1 a date to start getting data from
-	* @param int $date2 a date to end getting data at
-	* @return array json decoded data got from parsing page
+	 * Replaces id and dates with params
+	 *
+	 * Accepts three integers and returns the Array
+	 *
+	 * @param int $counter_id an id of the counter in ya.metrika
+	 * @param int $date1 a date to start getting data from
+	 * @param int $date2 a date to end getting data at
+	 * @return array json decoded data got from parsing page
 	**/
 	public function GetCalls($counter_id,$date1,$date2){
         $this -> Connect();
